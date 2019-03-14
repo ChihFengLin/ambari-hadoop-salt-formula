@@ -1,0 +1,1 @@
+# ambari-hadoop-salt-formula
