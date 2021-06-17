@@ -1,3 +1,0 @@
-base:
-  '*':
-    - ambari_mine

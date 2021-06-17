@@ -1,0 +1,14 @@
+export JAVA_HOME={{ java_open_jdk_dir }}
+export PATH=$PATH:{{ python_bin_dir }}:{{ java_bin_dir }}:/apps/valrs/tools/java/jdk1.8.0_161/bin:{{ veritas_local_bin }}
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:{{ python_lib_dir }}:{{ veritas_local_lib_dir }}:{{ veritas_local_lib64_dir }}
+export PYSPARK_PYTHON={{ python_bin_dir }}/python3
+export YARN_CONF_DIR={{ yarn_conf_dir }}
+export SPARK_HOME={{ spark_home }}
+export HADOOP_HOME={{ hadoop_home }}
+export HADOOP_CONF_DIR={{ hadoop_conf_dir }}
+export HADOOP_COMMON_HOME={{ hadoop_common_home }}
+export HADOOP_HDFS_HOME={{ hadoop_hdfs_home }}
+export HADOOP_YARN_HOME={{ hadoop_yarn_home }}
+export HADOOP_MAPRED_HOME={{ hadoop_mapred_home }}
+export HBASE_HOME={{ hbase_home }}
+export HBASE_CONF_DIR={{ hbase_conf_dir }}

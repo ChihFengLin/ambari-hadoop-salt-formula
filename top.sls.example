@@ -1,0 +1,7 @@
+base:
+  '*':
+    - hdp.ambari.hadoopbase
+    - hdp.ambari.mysql
+    - hdp.ambari.server
+    - hdp.ambari.configure
+    - hdp.ambari.blueprint

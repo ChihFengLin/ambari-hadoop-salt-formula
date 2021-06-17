@@ -1,0 +1,247 @@
+common_properties:
+  valrs_local_lib: /app1/valrs/local/lib
+  valrs_local_lib64: /app1/valrs/local/lib64
+  valrs_local_bin: /apps/valrs/local/bin
+  python3_lib: /apps/valrs/tools/python/python3.7.3/lib
+  python3_bin: /apps/valrs/tools/python/python3.7.3/bin
+  python3_home: /apps/valrs/tools/python/python3.7.3
+  java_bin: /apps/valrs/tools/java/jdk1.8.0_261/bin
+  yarn_conf_dir: /usr/hdp/current/hadoop-client/conf
+  spark_home: /usr/hdp/current/spark2-client
+  hadoop_home: /usr/hdp/current/hadoop-client
+  hadoop_conf_dir: /usr/hdp/current/hadoop-client/conf
+  hadoop_common_home: /usr/hdp/current/hadoop-client
+  hadoop_hdfs_home: /usr/hdp/current/hadoop-hdfs-client
+  hadoop_yarn_home: /usr/hdp/current/hadoop-yarn-client
+  hadoop_mapred_home: /usr/hdp/current/hadoop-mapreduce-client
+  hbase_home: /usr/hdp/current/hbase-client
+  hbase_conf_dir: /usr/hdp/current/hbase-client/conf
+  pip_dependencies:
+    - py4j==0.10.7
+    - pyspark==2.3.2
+
+env_specific_properties:
+  local:
+    user: vagrant    
+  dev:
+    user: tvalrs01clouds
+  pat:
+    user: avalrs01clouds
+  prod:
+    user: pvalrs01clouds
+
+
+ambari_properties:
+  
+  ########################
+  ## host configuration ##
+  ########################
+  hosts:
+    repo_server:
+      dev:
+        ipv4: valrsrepo-ri9u1.dev.azure.td.com
+        hostname: valrsrepo-ri9u1.dev.azure.td.com
+        port: 80
+      pat:
+        ipv4: valrsrepo-jdvw1.pat.azure.td.com
+        hostname: valrsrepo-jdvw1.pat.azure.td.com
+        port: 80
+      prod:
+        ipv4: valrsrepo-kebe1.prod.azure.td.com
+        hostname: valrsrepo-kebe1.prod.azure.td.com
+        port: 80
+    database_server:
+      port: 3306
+
+  ###########################
+  ## cluster configuration ##
+  ###########################
+  ntp_service_name: chronyd
+  cluster_template_file: 'cluster_template.jinja'
+  default_password: 'Veritas@12345'
+  hadoop_log_root_dir: app1
+  hadoop_data_root_dir: app2
+  
+  repos:
+    ambari:
+      version: 2.7.4.0
+      major_version: 2
+      build_number: 139
+    hdp:
+      version: 3.1.4.0
+      major_version: 3
+      minor_version: 3.1
+      build_number: 315
+    hdp_utils:
+      version: 1.1.0.22
+
+  ####################################
+  ## database configuration (MYSQL) ##
+  ####################################
+  database_configurations:
+
+    database_type: mysql
+
+    mysql:
+      jdbc_location: /usr/share/java/mysql-connector-java.jar
+      port: 3306        
+    
+    mysql_rpm:
+      rhel_five: http://repo.mysql.com/mysql57-community-release-el5.rpm
+      rhel_six: http://repo.mysql.com/mysql57-community-release-el6.rpm
+      rhel_seven: http://repo.mysql.com/mysql57-community-release-el7.rpm
+    
+    mysql_config:
+      server_pkg: mysql-community-server
+      client_pkg: mysql-community-client
+      python_pkg: MySQL-python
+      service: mysqld
+      config: /etc/my.cnf
+      data_root_dir: /var/lib/mysql
+      pid_root_dir: /var/run/mysqld
+      log_file: /var/log/mysqld.log
+      flag_file_path: /tmp/mysql_flag
+      root_user: root
+      root_password: aA123456789++
+      ssl:
+        enabled: False
+        ca_file: /etc/mysql/cacert.pem
+        cert_file: /etc/mysql/server-cert.pem
+        key_file: /etc/mysql/server-key.pem
+        client_cert_file: /etc/mysql/client-cert.pem
+        client_key_file: /etc/mysql/client-key.pem
+
+    database_options:
+      ambari:
+        db_name: 'ambari'
+        db_password: 'Big@data123'
+      hive:  
+        db_name: 'hive'
+        db_password: 'Hive@123'
+      ranger:  
+        db_name: 'ranger'
+        db_password: 'Ranger@123'
+      rangerkms: 
+        db_name: 'rangerkms'
+        db_password: 'Rangerkms@123'
+      druid:
+        db_name: 'druid'
+        db_password: 'aA123456789++'
+  
+  ########################
+  ## java configuration ##
+  ########################
+  java_configurations:
+    openjdk_path: /apps/valrs/tools/java/jdk1.8.0_261
+
+  #####################################
+  ## kerberos security configuration ##
+  #####################################
+  security: 'none'                                          # can be set to 'none', 'mit-kdc' or 'active-directory'
+  security_options:
+    external_hostname: ''                                   # if this is empty, Ansible will install and prepare the MIT KDC on the Ambari node
+    realm: 'EXAMPLE.COM'
+    admin_principal: 'admin'                                # the Kerberos principal that has the permissions to create new users (don't append the realm)
+    admin_password: 'Veritas@12345' 
+    kdc_master_key: 'Veritas@12345'                          # only used when security is set to 'mit-kdc'
+    ldap_url: 'ldaps://ad.example.com:636'                  # only used when security is set to 'active-directory'
+    container_dn: 'OU=hadoop,DC=example,DC=com'             # only used when security is set to 'active-directory'
+    http_authentication: yes                                # set to yes to enable HTTP authentication (SPNEGO)
+
+  ##########################
+  ## ranger configuration ##                                # only useful if blueprint is dynamic
+  ##########################
+  ranger_options:                                           # only used if RANGER_ADMIN is part of the blueprint stack
+    enable_plugins: no                                     # set to 'yes' if the plugins should be enabled for all of the installed services
+
+  ranger_security_options:                                  # only used if RANGER_ADMIN is part of the blueprint stack
+    ranger_admin_password: 'Veritas@12345'                   # the password for the Ranger admin users (both admin and amb_ranger_admin)
+    ranger_keyadmin_password: 'Veritas@12345'                # the password for the Ranger keyadmin user (will only be set in HDP3, in HDP2 it will remain the default keyadmin)
+    kms_master_key_password: 'Veritas@12345'                 # password used for encrypting the Master Key
+  
+  ranger_xa_log_maxfilesize: 50
+  ranger_xa_log_maxbackupindex: 5
+  ranger_usersync_log_maxfilesize: 50
+  ranger_usersync_log_maxbackupindex: 5
+
+  #########################
+  ## atlas configuration ##                                  # only useful if blueprint is dynamic
+  #########################
+                         
+  atlas_security_options:
+    admin_password: 'Veritas@12345'                          # the password for the Atlas admin user
+  
+  ########################
+  ## knox configuration ##                                  # only useful if blueprint is dynamic
+  ########################
+
+  knox_security_options:
+    master_secret: 'Veritas@12345'                           # Knox Master Secret
+
+  #############################
+  ## zookeeper configuration ##                              # only useful if blueprint is dynamic
+  #############################
+
+  zk:
+    logfilesize: 50
+    backupfiles: 5
+    server_heapsize: 2048
+  
+  ########################
+  ## yarn configuration ##                                  # only useful if blueprint is dynamic
+  ########################
+
+  yarn:
+    apptimelineserver_heapsize: 2048
+    resourcemanager_heapsize: 2048
+    min_user_id: 500
+    nodemanager_heapsize: 2048
+    rm_summary_log_max_backup_size: 50
+    rm_summary_log_number_of_backup_files: 5
+    jobhistory_heapsize: 1024
+    heapsize: 2048
+  
+  ########################
+  ## hdfs configuration ##                                  # only useful if blueprint is dynamic
+  ########################
+
+  hdfs:
+    hadoop_security_log_max_backup_size: 50
+    hadoop_security_log_number_of_backup_files: 5
+    hadoop_log_number_of_backup_files: 5
+    hadoop_log_max_backup_size: 50
+    dtnode_heapsize: 2048
+    namenode_heapsize: 2048
+    namenode_opt_maxnewsize: 384m
+    namenode_opt_newsize: 384m
+    hadoop_heapsize: 2048
+
+  #########################
+  ## hbase configuration ##                                  # only useful if blueprint is dynamic
+  #########################
+
+  hbase:
+    log_maxbackupindex: 5
+    security_log_maxfilesize: 50
+    log_maxfilesize: 50
+    security_log_maxbackupindex: 5
+    regionserver_heapsize: 2048
+
+  #########################
+  ## kafka configuration ##                                  # only useful if blueprint is dynamic
+  #########################
+
+  kafka:
+    controller_log_maxbackupindex: 5
+    controller_log_maxfilesize: 50
+    log_maxfilesize: 50
+    log_maxbackupindex: 5 
+
+  ########################
+  ## hive configuration ##                                  # only useful if blueprint is dynamic
+  ########################
+
+  hive2:
+    log_maxfilesize: 50
+    log_maxbackupindex: 5
+

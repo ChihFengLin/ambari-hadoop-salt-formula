@@ -1,0 +1,98 @@
+{% import_yaml 'infoplatform/ambari_lab/defaults.yaml' as defaults %}
+{% import_yaml 'infoplatform/ambari_lab/server.yaml' as ambari_server %}
+{% import_yaml 'infoplatform/ambari_lab/agent.yaml' as ambari_agent %}
+{% import_yaml 'infoplatform/ambari_lab/blueprint.yaml' as blueprint %}
+{% import_yaml 'infoplatform/ambari_lab/inventory.yaml' as inventory %}
+
+
+{# Create Env Function #}
+{% macro env() -%}
+  {{ grains['id'].split('.')[1] if '.' in grains['id'] else 'local' }}
+{%- endmacro %}
+
+{% set clustername = {'cluster_name': '%scluster' % (env())} %}
+
+{# Identify Local Deployment #}
+{% if env() == 'local' %}
+  {% set common_vars = defaults.env_specific_properties.local %}
+{% elif env() == 'dev' %}
+  {% set common_vars = defaults.env_specific_properties.dev %}
+{% elif env() == 'pat' %}
+  {% set common_vars = defaults.env_specific_properties.pat %}
+{% else %}
+  {% set common_vars = defaults.env_specific_properties.prod %}
+{% endif %}
+
+{% do common_vars.update(defaults.common_properties) %}
+
+{% set deploy_env = {'deploy_env': '%s' % (env())} %}
+
+{%- set ambari_credential = {
+    'ambari_admin_user': 'admin',
+    'ambari_admin_password': 'admin'
+    } 
+%}
+
+{%- set lookup = salt['pillar.get'](
+    'ambari:lookup', default={}, merge=True) 
+%}
+{% do defaults.ambari_properties.update(lookup) %}
+
+{# merge server and agent confs into defaults #}
+{% do defaults.ambari_properties.update(ambari_server) %}
+{% do defaults.ambari_properties.update(ambari_agent) %}
+{% do defaults.ambari_properties.update(blueprint) %}
+{% do defaults.ambari_properties.update(clustername) %}
+{% do defaults.ambari_properties.update(deploy_env) %}
+{% do defaults.ambari_properties.update(ambari_credential) %}
+{% do defaults.ambari_properties.update(inventory) %}
+
+{# merge all #}
+{%- set ambari_props = salt['pillar.get'](
+    'ambari', 
+    default=defaults['ambari_properties'], 
+    merge=true
+) %}
+
+{%- set java_configurations = defaults.ambari_properties.java_configurations %}
+
+{# mysql configuration #}
+{%- set mysql_config = defaults.ambari_properties.database_configurations.mysql_config %}
+{%- set mysql_rpm = defaults.ambari_properties.database_configurations.mysql_rpm %}
+{%- set mysql = salt['grains.filter_by'](
+    {
+        'RedHat': {
+            'server_pkg': mysql_config.server_pkg,
+            'client_pkg': mysql_config.client_pkg,
+            'python_pkg': mysql_config.python_pkg,
+            'service': mysql_config.service,
+            'config': mysql_config.config,
+            'data_root_dir': mysql_config.data_root_dir,
+            'pid_root_dir': mysql_config.pid_root_dir,
+            'log_file': mysql_config.log_file,
+            'root_user': mysql_config.root_user,
+            'root_password': mysql_config.root_password,
+            'ssl': mysql_config.ssl,
+            'flag_file_path': mysql_config.flag_file_path,
+        }
+    }
+) %}
+
+{%- if grains['os_family'] == 'RedHat' %}
+{%- if grains['osmajorrelease']|int == 5 %}
+{%- set rpm_source = mysql_rpm.rhel_five %}
+{%- elif grains['osmajorrelease']|int == 6 %}
+{%- set rpm_source = mysql_rpm.rhel_six %}
+{%- elif grains['osmajorrelease']|int == 7 %}
+{%- set rpm_source = mysql_rpm.rhel_seven %}
+{%- endif %}
+{%- endif %}
+
+# A lookup table for MySQL Repo GPG keys & RPM URLs for various RedHat releases
+{%- set rpm_pkg = {
+        'key': 'http://repo.mysql.com/RPM-GPG-KEY-mysql',
+        'key_hash': 'md5=472a4a4867adfd31a68e8c9bbfacc23d',
+        'rpm': rpm_source
+    } 
+%}
+
